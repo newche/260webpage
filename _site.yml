@@ -1,7 +1,9 @@
 name: "my-website"
 output_dir: "."
+theme: jekyll-theme-minimal
+description: This is the final project github webpage for bst260
 navbar:
-  titel: "My Website"
+  title: "My Website"
   left:
     - text: "HOME"
-      hred: index.html
+      hred: 260-page.html
