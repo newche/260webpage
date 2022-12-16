@@ -6,4 +6,4 @@ navbar:
   title: "My Website"
   left:
     - text: "HOME"
-      hred: 260-page.html
+      hred: index.html
