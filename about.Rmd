@@ -1,0 +1,14 @@
+---
+title: "About"
+output: html_document
+---
+
+This is the webpage created to show my final project for bst260 2022. It is a project that predicts heart failure by the data set with 11 factors.
+
+
+
+Tables, Figures, full report can be accessed from the menu bar.
+
+
+
+Data resource: https://www.kaggle.com/datasets/fedesoriano/heart-failure-prediction

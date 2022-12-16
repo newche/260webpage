@@ -1,0 +1,179 @@
+---
+title: "Tables"
+output: html_document
+---
+
+### List of Tables
+
+```{r include=FALSE}
+# data cleaning
+library(tidyverse)
+library(table1)
+library(gridExtra)
+library(ggplot2)
+library(ggpubr)
+library(glmnet)
+library(purrr)
+library(caret)
+library(randomForest)
+library(knitr)
+library(kableExtra)
+
+heart <- read.csv("heart.csv", header=T)
+# omit NA
+heart <- heart|> na.omit()
+# response variable y
+y <- heart$HeartDisease 
+
+heart <- heart |> mutate(FastingBS = factor(FastingBS, levels=c(0,1), labels=c("Blood Sugar > 120 mg/dl", "otherwise")),
+                         HeartDisease = factor(HeartDisease, levels=c(0,1))) |> filter(Cholesterol>0, RestingBP>0, Oldpeak>=0)
+
+```
+
+```{r include=FALSE}
+# Logistic model with all predictors
+M1 = glm(HeartDisease ~ . , data = heart, family = binomial)
+summary(M1)
+
+set.seed(100)
+#randomly selected 80% as training set for hyper-parameters
+trainset <- sample_frac(heart, 0.8)
+# Logistic model with LASSO predictors
+lambda_grid = 10^seq(5,-2,length=100)
+x = model.matrix(HeartDisease~., data=trainset)
+y = as.integer(trainset$HeartDisease)
+lasso.mod=glmnet(x, y, alpha=1, family="binomial", lambda=lambda_grid)
+cv.out = cv.glmnet(x, y, family = "binomial", alpha = 1)
+lasso.mod2=glmnet(x,y, family="binomial", alpha=1)
+cv_fit <- cv.glmnet(x,y,alpha=1, lambda=lambda_grid, family="binomial")
+opt_lambda <- cv.out$lambda[which.min(cv.out$cvm)]
+opt_lambda #0.007847
+lasso.coef = predict(lasso.mod2, type = "coefficients", s = opt_lambda)
+lasso.coef
+
+M2 = glm(HeartDisease ~ .-RestingECG - MaxHR , data = heart, family = binomial)
+summary(M2)
+
+```
+
+```{r include=FALSE}
+set.seed(10)
+ks <- seq(1,11,1)
+trControl <- trainControl(method="cv", number=10)
+fit_knn <- train(as.factor(HeartDisease) ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = 1:11),
+             trControl  = trControl,
+             metric     = "Accuracy",
+             data       = trainset)
+best_K <- fit_knn$results$k[which.max(fit_knn$results$Accuracy)]
+best_K #8
+M3 <- knn3(as.factor(HeartDisease) ~ ., data=heart, k=8)
+```
+
+```{r include=FALSE}
+# conduct 10 fold CV to compare test performance
+set.seed(10)
+K = 10
+n = nrow(heart)
+n_models = 4
+permutation = sample(1:n)  
+test_error_fold = matrix(0, K, n_models)
+sensititivy_fold = matrix(0, K, n_models)
+specificity_fold = matrix(0, K, n_models)
+for (j in 1:K) {
+  # 1. extract indices of units in the pseudo-test set for split j
+  pseudotest = heart[permutation[floor((j-1)*n/K+1) : floor(j*n/K)], ]  
+  # 2. extract indices of units in the pseudo-training set for split j
+  pseudotrain = heart[setdiff(1:n, pseudotest), ]
+  # 3. fit all models of interest
+  m1 = glm(as.factor(HeartDisease) ~ ., data = pseudotrain, family = binomial)
+  m2 = glm(as.factor(HeartDisease) ~ .-RestingECG - MaxHR , data = pseudotrain, family = binomial)
+  m3 = knn3(as.factor(HeartDisease) ~ ., data=pseudotrain, k=8)
+  m4 = randomForest(as.factor(HeartDisease)~., mtry = 2, data = pseudotrain, importance = T)
+  # 4. Compute Performance on each model
+  for (i in 1:n_models) {
+    if (i==3) {
+      probabilities = eval(m3) |> predict(pseudotest, type="class")
+      results = confusionMatrix(probabilities, true.classes, positive = "1")
+      test_error_fold[j, i] = 1 - results$overall["Accuracy"]
+      sensititivy_fold[j, i] = results$byClass["Sensitivity"]
+      specificity_fold[j, i] = results$byClass["Specificity"]
+    }
+    if (i==4) {
+      probabilities = eval(m4) |> predict(pseudotest, type = "response")
+      results = confusionMatrix(probabilities, true.classes, positive = "1")
+      test_error_fold[j, i] = 1 - results$overall["Accuracy"]
+      sensititivy_fold[j, i] = results$byClass["Sensitivity"]
+      specificity_fold[j, i] = results$byClass["Specificity"]
+    }
+    if(i==1 | i==2 ) {
+      probabilities = eval(parse(text = paste0("m", i))) |> predict(pseudotest, type = "response")
+      predicted.classes = factor(ifelse(probabilities > 0.5, 1, 0), levels = 0:1)
+      true.classes = factor(pseudotest$HeartDisease, levels = 0:1)
+      results = confusionMatrix(predicted.classes, true.classes, positive = "1")
+      test_error_fold[j, i] = 1 - results$overall["Accuracy"]
+      sensititivy_fold[j, i] = results$byClass["Sensitivity"]
+      specificity_fold[j, i] = results$byClass["Specificity"]
+    }
+    
+    #results = confusionMatrix(predicted.classes, true.classes, positive = "1")
+    #test_error_fold[j, i] = 1 - results$overall["Accuracy"]
+    #sensititivy_fold[j, i] = results$byClass["Sensitivity"]
+    #specificity_fold[j, i] = results$byClass["Specificity"]
+  }
+}
+# average across splits to obtain CV estimate of test MSE
+test_error_cvs = round(colMeans(test_error_fold), 5)
+sensitivity_cvs = round(colMeans(sensititivy_fold), 5)
+specificity_cvs = round(colMeans(specificity_fold), 5)  
+models = c("Model 1", "Model 2", "Model 3", "Model 4")
+descriptions = c("Logistic - All", "Logistic - Lasso", "KNN", "Random Forest")
+results = cbind(models, descriptions, test_error_cvs, sensitivity_cvs, specificity_cvs)
+colnames(results) = c("Model", "Description", "Test Error Rate", "Sensitivity", "Specificity")
+#results
+```
+
+
+
+**Table 1. Exploratory Data Analysis**
+
+
+```{r echo=FALSE}
+# table1. EDA of data set
+# EDA table for summarizing the variables group by the response variable heart disease
+heart1 <- heart|> mutate(HeartDisease=factor(HeartDisease, levels=c(0,1), labels=c("Normal", "Heart Disease")))
+table1(~ Sex + Age + ChestPainType + RestingBP + Cholesterol + FastingBS + RestingECG + MaxHR + ExerciseAngina + Oldpeak + ST_Slope | HeartDisease, data=heart1, overall = "Total")
+
+```
+
+\newpage
+
+
+**Table 2. Results of Four Models from 10-fold Cross-Validation**
+
+
+```{r echo=FALSE}
+results <- as.data.frame(results)
+results$`Test Error Rate` <- round(as.numeric(results$`Test Error Rate`),3)
+results$Sensitivity<- round(as.numeric(results$`Sensitivity`),3)
+results$Specificity <- round(as.numeric(results$Specificity), 3)
+results[,2:5] |> kbl() |> kable_styling()
+```
+
+
+
+
+
+
+
+**Table 3. Summary of Logistic with Lasso Selected Variables**
+
+
+```{r echo=FALSE}
+slog <- summary(M2)
+slog <- as.data.frame(slog$coefficients)
+slog$Estimate <- round(slog$Estimate,3)
+slog$`Std. Error` <- round(slog$`Std. Error`, 3)
+slog[,-3] |> kbl() |> kable_styling()
+```

@@ -9,11 +9,9 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Jinyi Che" />
 
-<meta name="date" content="2022-12-16" />
 
-<title>260 Final Report</title>
+<title>Tables</title>
 
 <script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -271,93 +269,11 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">260 Final Report</h1>
-<h4 class="author">Jinyi Che</h4>
-<h4 class="date">12/16/2022</h4>
+<h1 class="title toc-ignore">Tables</h1>
 
 </div>
 
 
-<div id="i.-introduction" class="section level1">
-<h1>I. Introduction</h1>
-<div id="research-purpose" class="section level2">
-<h2>1. Research Purpose</h2>
-<p>Cardiovascular diseases (CVDs) are the 1st cause of death globally, it is predicted that xxx people will die of CVDs. Heart failure is a common event caused by CVDs. Early detection and continuous health management are recommended for people who have high risk for CVDs. With the data set that contains 11 covariates that can be used to predict heart failure, our study aims to study how the important factors are related to heart attach event and to make prediction upon the given factors.</p>
-</div>
-<div id="dataset" class="section level2">
-<h2>2. Dataset</h2>
-<p>To be more detailed, the data set was created by combining 5 heart data sets. The combined final version data set contains 11 factors that are related to heart failure. The factors include basic information such like Age, Sex; physical exam results such like Chest pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, max heart rate, exercise-induced angina, oldpeak of ST, ST slope; and binary response variable heart disease.</p>
-<p>To clean the data, entries that with cholesterol being 0 are removed. Entries that with negative Oldpeak and 0 blood pressure are also removed. After cleaning, there are 745 rows in the data set and 12 variables related to heart failure.</p>
-</div>
-<div id="eda" class="section level2">
-<h2>3. EDA</h2>
-<p>To have a better understanding of the data, we perform the exploratory data analysis using a table to summarize all the variables by the response variable heart disease. Based on table, male older than 55 years old have higher risk of heart disease; those who have heart disease are likely to have ASY (Asymptomatic) pain chest type, flat peak exercise ST segment slope, and blood sugar &gt; 120 mg/dl. To further see the distribution of these factors that have significant difference in heart disease and non heart disease groups in the table, plots are done for age, cholesterol, sex, and chest pain type.</p>
-</div>
-</div>
-<div id="ii.-methodology-for-analysis" class="section level1">
-<h1>II. Methodology for Analysis</h1>
-<div id="logistic-regression-model" class="section level2">
-<h2>1. Logistic Regression model</h2>
-<p>As the response variable heart disease is binary with values Normal (0) and Heart Disease (1), Logistic regression model and its extension models are fitted. This include logistic model with all available covariates and regularization method where we do the penalized logistic regression.</p>
-<p>In order to fit the penalized logistic regression, Lasso (Least Absolute Shrinkage and Selection Operator) is considered. To find the tuning parameter <span class="math inline">\(\lambda\)</span>, 10-fold cross validation on a grid of 100 possible <span class="math inline">\(\lambda\)</span> values are proceeded within the training set (80% of whole data set) to select the <span class="math inline">\(\lambda\)</span> which yields the lowest average test error rate. With the best <span class="math inline">\(\lambda\)</span>, LASSO selected variables are generated and fit into logistic model.</p>
-</div>
-<div id="k-nearest-neighbors" class="section level2">
-<h2>2. K-Nearest Neighbors</h2>
-<p>K-Nearest Neighbor model is fitted with all the 11 covariates. The best number of neighbors K will be selected by using 10-fold cross validation inside the training set again. K with highest accuracy will be selected as the best number of neighbors and used in the kNN model prediction.</p>
-</div>
-<div id="random-forest" class="section level2">
-<h2>3. Random Forest</h2>
-<p>Random Forest model is also performed. The best number of variable to random sample as candidates at each split is selected by Cross-validation within the training set created earlier.</p>
-</div>
-</div>
-<div id="iii.-results" class="section level1">
-<h1>III. Results</h1>
-<div id="hyper-parameter-outputs-by-cross-validation-on-training-set" class="section level2">
-<h2>1. Hyper-parameter Outputs by Cross-validation on Training Set:</h2>
-<p>As described previously, the hyper-parameters are selected by cross-validation on the training set, which is a random sample that takes 80% of the whole data set after cleaning. The Lasso selected variables for Logistic regression are Chest pain type, Resting blood pressure, Cholesterol, Fasting blood sugar, Exercise-induced angina, Oldpeak of ST, ST slope. Best K for kNN model is 8. The number of variable to random sample as candidates at each split is 2 for random forest model.</p>
-</div>
-<div id="select-the-best-model-by-prediction-performance" class="section level2">
-<h2>2. Select the Best Model by Prediction Performance</h2>
-<p>By conducting 10-fold Cross-Validation with the four candidate models (Logistic-All, Logistic-Lasso, KNN, Random Forest), the test performance is described in <em>Table 2. Results of Four Models from 10-fold Cross-Validation</em>. The probability cutoff we select is the default 0.5 for logistic prediction, because the response variable is balanced. It is clear that from the table, Random Forest model has the best performance among the four models. Random Forest model with mtry=2 has the lowest test error rate (0.009)/highest accuracy, highest specificity (0.987) and sensitivity (0.995). The worst performance is from KNN with K=9. Logistic Lasso has the second best performance, slightly better than Logistic with all variables.</p>
-<p>The influence of each variable on model in Random Forest is shown in <em>Figure 2. Each Variable’s Influence on Random Forest Model</em>. ST_slope, ChestpainType, and Oldpeak are the most influential factors.</p>
-<p>To examine the error rate versus the number of trees, the result is shown in <em>Figure 3. Error Rate vs. Number of Trees in Random Forest Model</em>. There is little change in error rate after about 150 trees.</p>
-<p>The confusion matrix of random forest is shown in <em>Table 3. Confusion Matrix of Best Model - Random Forest</em>.</p>
-</div>
-<div id="other-model-results" class="section level2">
-<h2>3. Other Model Results</h2>
-<p>Other than Random Forest, Logistic with Lasso selected variables is the second best model in terms of test error rate, sensitivity, specificity. The model summary of the Logistic with Lasso selected variables is shown as <em>Table 4. Summary of Logistic with Lasso Selected Variables</em>. From Table 4, the significant factors are Age (p-value=0.015), Sex (&lt;0.001), ChestpainType (&lt;0.001 for 3 levels), ExerciseAngina (&lt;0.001), Oldpead (0.003), ST_slope(flat=0.014, up=0.030). Among these, Male have higher odds compared to women; Chest pain ASY type has higher odds compared to type ATA, NAP, TA; Exercise Angina Yes has higher odds than No; ST slope flat and up positions have seperately higher and lower odds compared to the reference group.</p>
-</div>
-<div id="roc-comparison" class="section level2">
-<h2>4. ROC comparison</h2>
-<p>As in <em>Figure 4. ROC Curve Comparison on a Single Test Set</em>, we split a new train/test set with ratio 7:3, and the ROC curves are shown in the plot. Similarly, Random Forest performs best.</p>
-</div>
-</div>
-<div id="discussion" class="section level1">
-<h1>Discussion</h1>
-<div id="conclusion" class="section level2">
-<h2>1. Conclusion</h2>
-</div>
-<div id="comments" class="section level2">
-<h2>2. Comments</h2>
-<div style="page-break-after: always;"></div>
-</div>
-</div>
-<div id="appendix" class="section level1">
-<h1>Appendix</h1>
-<div id="list-of-figures" class="section level3">
-<h3>List of Figures</h3>
-<p><strong>Figure 1. Exploratory Data Analysis - Cholesterol, Age, Sex, Chest Pain</strong></p>
-<p><img src="index_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
-<p><strong>Figure 2. Each Variable’s Influence on Random Forest Model</strong></p>
-<p><img src="index_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
-<p><strong>Figure 3. Error Rate vs. Number of Trees in Random Forest Model</strong></p>
-<p><img src="index_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
-<p><strong>Figure 4. ROC Curve Comparison on a Single Test Set</strong></p>
-<p><img src="index_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
-<p><strong>Figure 5. Confusion Matrix of Best Model - Random Forest</strong></p>
-<p><img src="index_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
-<div style="page-break-after: always;"></div>
-</div>
 <div id="list-of-tables" class="section level3">
 <h3>List of Tables</h3>
 <p><strong>Table 1. Exploratory Data Analysis</strong></p>
@@ -876,7 +792,6 @@ ST_SlopeUp
 </tr>
 </tbody>
 </table>
-</div>
 </div>
 
 

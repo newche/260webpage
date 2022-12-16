@@ -1,26 +1,7 @@
 ---
-title: "260 Final Report"
-author: "Jinyi Che"
-date: "12/16/2022"
+title: "Figures"
 output: html_document
 ---
-
-
-# I. Introduction
-
-## 1. Research Purpose
-
-Cardiovascular diseases (CVDs) are the 1st cause of death globally, it is predicted that xxx people will die of CVDs. Heart failure is a common event caused by CVDs. Early detection and continuous health management are recommended for people who have high risk for CVDs. With the data set that contains 11 covariates that can be used to predict heart failure, our study aims to study how the important factors are related to heart attach event and to make prediction upon the given factors. 
-
-## 2. Dataset
-
-
-To be more detailed, the data set was created by combining 5 heart data sets. The combined final version data set contains 11 factors that are related to heart failure. The factors include basic information such like Age, Sex; physical exam results such like Chest pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, max heart rate, exercise-induced angina, oldpeak of ST, ST slope; and binary response variable heart disease. 
-
-To clean the data, entries that with cholesterol being 0 are removed. Entries that with negative Oldpeak and 0 blood pressure are also removed. After cleaning, there are 745 rows in the data set and 12 variables related to heart failure.
-
-
-## 3. EDA
 
 
 ```{r include=FALSE}
@@ -48,21 +29,6 @@ heart <- heart |> mutate(FastingBS = factor(FastingBS, levels=c(0,1), labels=c("
 
 ```
 
-To have a better understanding of the data, we perform the exploratory data analysis using a table to summarize all the variables by the response variable heart disease. Based on table, male older than 55 years old have higher risk of heart disease; those who have heart disease are likely to have ASY (Asymptomatic) pain chest type, flat peak exercise ST segment slope, and blood sugar > 120 mg/dl. To further see the distribution of these factors that have significant difference in heart disease and non heart disease groups in the table, plots are done for age, cholesterol, sex, and chest pain type. 
-
-
-# II. Methodology for Analysis
-
-
-## 1. Logistic Regression model
-
-
-As the response variable heart disease is binary with values Normal (0) and Heart Disease (1), Logistic regression model and its extension models are fitted. This include logistic model with all available covariates and regularization method where we do the penalized logistic regression.
-
-
-In order to fit the penalized logistic regression, Lasso (Least Absolute Shrinkage and Selection Operator) is considered. To find the tuning parameter $\lambda$, 10-fold cross validation on a grid of 100 possible $\lambda$ values are proceeded within the training set (80% of whole data set) to select the $\lambda$ which yields the lowest average test error rate. With the best $\lambda$, LASSO selected variables are generated and fit into logistic model.
-
-
 ```{r include=FALSE}
 # Logistic model with all predictors
 M1 = glm(HeartDisease ~ . , data = heart, family = binomial)
@@ -89,13 +55,6 @@ summary(M2)
 
 ```
 
-
-## 2. K-Nearest Neighbors
-
-
-K-Nearest Neighbor model is fitted with all the 11 covariates. The best number of neighbors K will be selected by using 10-fold cross validation inside the training set again. K with highest accuracy will be selected as the best number of neighbors and used in the kNN model prediction.
-
-
 ```{r include=FALSE}
 set.seed(10)
 ks <- seq(1,11,1)
@@ -110,27 +69,6 @@ best_K <- fit_knn$results$k[which.max(fit_knn$results$Accuracy)]
 best_K #8
 M3 <- knn3(as.factor(HeartDisease) ~ ., data=heart, k=8)
 ```
-
-
-
-## 3. Random Forest
-
-
-Random Forest model is also performed. The best number of variable to random sample as candidates at each split is selected by Cross-validation within the training set created earlier.
-
-
-
-# III. Results
-
-
-## 1. Hyper-parameter Outputs by Cross-validation on Training Set:
-
-
-As described previously, the hyper-parameters are selected by cross-validation on the training set, which is a random sample that takes 80% of the whole data set after cleaning. The Lasso selected variables for Logistic regression are Chest pain type, Resting blood pressure, Cholesterol, Fasting blood sugar, Exercise-induced angina, Oldpeak of ST, ST slope. Best K for kNN model is 8. The number of variable to random sample as candidates at each split is 2 for random forest model.
-
-
-
-## 2. Select the Best Model by Prediction Performance
 
 ```{r include=FALSE}
 # conduct 10 fold CV to compare test performance
@@ -195,52 +133,6 @@ colnames(results) = c("Model", "Description", "Test Error Rate", "Sensitivity", 
 #results
 ```
 
-
-
-By conducting 10-fold Cross-Validation with the four candidate models (Logistic-All, Logistic-Lasso, KNN, Random Forest), the test performance is described in *Table 2. Results of Four Models from 10-fold Cross-Validation*. The probability cutoff we select is the default 0.5 for logistic prediction, because the response variable is balanced. It is clear that from the table, Random Forest model has the best performance among the four models. Random Forest model with mtry=2 has the lowest test error rate (0.009)/highest accuracy, highest specificity (0.987) and sensitivity (0.995). The worst performance is from KNN with K=9. Logistic Lasso has the second best performance, slightly better than Logistic with all variables.
-
-
-
-The influence of each variable on model in Random Forest is shown in *Figure 2. Each Variable's Influence on Random Forest Model*. ST_slope, ChestpainType, and Oldpeak are the most influential factors. 
-
-
-
-To examine the error rate versus the number of trees, the result is shown in *Figure 3. Error Rate vs. Number of Trees in Random Forest Model*. There is little change in error rate after about 150 trees.
-
-
-
-The confusion matrix of random forest is shown in *Table 3. Confusion Matrix of Best Model - Random Forest*.
-
-
-
-## 3. Other Model Results
-
-
-Other than Random Forest, Logistic with Lasso selected variables is the second best model in terms of test error rate, sensitivity, specificity. The model summary of the Logistic with Lasso selected variables is shown as *Table 4. Summary of Logistic with Lasso Selected Variables*. From Table 4, the significant factors are Age (p-value=0.015), Sex (<0.001), ChestpainType (<0.001 for 3 levels), ExerciseAngina (<0.001), Oldpead (0.003), ST_slope(flat=0.014, up=0.030). Among these,  Male have higher odds compared to women; Chest pain ASY type has higher odds compared to type ATA, NAP, TA; Exercise Angina Yes has higher odds than No; ST slope flat and up positions have seperately higher and lower odds compared to the reference group.
-
-
-
-## 4. ROC comparison
-
-
-As in *Figure 4. ROC Curve Comparison on a Single Test Set*, we split a new train/test set with ratio 7:3, and the ROC curves are shown in the plot. Similarly, Random Forest performs best.
-
-
-
-# Discussion
-
-## 1. Conclusion
-
-
-
-## 2. Comments
-
-
-
-
-\newpage
-
-# Appendix
 
 
 ### List of Figures
@@ -363,53 +255,3 @@ ggplot(data = plotTable, mapping = aes(x = Reference, y = Prediction, fill = goo
   xlim(rev(levels(table$Reference)))
 
 ```
-
-
-
-\newpage
-
-### List of Tables
-
-
-**Table 1. Exploratory Data Analysis**
-
-
-```{r echo=FALSE}
-# table1. EDA of data set
-# EDA table for summarizing the variables group by the response variable heart disease
-heart1 <- heart|> mutate(HeartDisease=factor(HeartDisease, levels=c(0,1), labels=c("Normal", "Heart Disease")))
-table1(~ Sex + Age + ChestPainType + RestingBP + Cholesterol + FastingBS + RestingECG + MaxHR + ExerciseAngina + Oldpeak + ST_Slope | HeartDisease, data=heart1, overall = "Total")
-
-```
-
-\newpage
-
-
-**Table 2. Results of Four Models from 10-fold Cross-Validation**
-
-
-```{r echo=FALSE}
-results <- as.data.frame(results)
-results$`Test Error Rate` <- round(as.numeric(results$`Test Error Rate`),3)
-results$Sensitivity<- round(as.numeric(results$`Sensitivity`),3)
-results$Specificity <- round(as.numeric(results$Specificity), 3)
-results[,2:5] |> kbl() |> kable_styling()
-```
-
-
-
-
-
-
-
-**Table 3. Summary of Logistic with Lasso Selected Variables**
-
-
-```{r echo=FALSE}
-slog <- summary(M2)
-slog <- as.data.frame(slog$coefficients)
-slog$Estimate <- round(slog$Estimate,3)
-slog$`Std. Error` <- round(slog$`Std. Error`, 3)
-slog[,-3] |> kbl() |> kable_styling()
-```
-
