@@ -1,0 +1,415 @@
+---
+title: "260 final"
+author: "Jinyi Che"
+date: "12/16/2022"
+output: html_document
+---
+
+
+# I. Introduction
+
+## 1. Research Purpose
+
+Cardiovascular diseases (CVDs) are the 1st cause of death globally, it is predicted that xxx people will die of CVDs. Heart failure is a common event caused by CVDs. Early detection and continuous health management are recommended for people who have high risk for CVDs. With the data set that contains 11 covariates that can be used to predict heart failure, our study aims to study how the important factors are related to heart attach event and to make prediction upon the given factors. 
+
+## 2. Dataset
+
+
+To be more detailed, the data set was created by combining 5 heart data sets. The combined final version data set contains 11 factors that are related to heart failure. The factors include basic information such like Age, Sex; physical exam results such like Chest pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, max heart rate, exercise-induced angina, oldpeak of ST, ST slope; and binary response variable heart disease. 
+
+To clean the data, entries that with cholesterol being 0 are removed. Entries that with negative Oldpeak and 0 blood pressure are also removed. After cleaning, there are 745 rows in the data set and 12 variables related to heart failure.
+
+
+## 3. EDA
+
+
+```{r include=FALSE}
+# data cleaning
+library(tidyverse)
+library(table1)
+library(gridExtra)
+library(ggplot2)
+library(ggpubr)
+library(glmnet)
+library(purrr)
+library(caret)
+library(randomForest)
+library(knitr)
+library(kableExtra)
+
+heart <- read.csv("heart.csv", header=T)
+# omit NA
+heart <- heart|> na.omit()
+# response variable y
+y <- heart$HeartDisease 
+
+heart <- heart |> mutate(FastingBS = factor(FastingBS, levels=c(0,1), labels=c("Blood Sugar > 120 mg/dl", "otherwise")),
+                         HeartDisease = factor(HeartDisease, levels=c(0,1))) |> filter(Cholesterol>0, RestingBP>0, Oldpeak>=0)
+
+```
+
+To have a better understanding of the data, we perform the exploratory data analysis using a table to summarize all the variables by the response variable heart disease. Based on table, male older than 55 years old have higher risk of heart disease; those who have heart disease are likely to have ASY (Asymptomatic) pain chest type, flat peak exercise ST segment slope, and blood sugar > 120 mg/dl. To further see the distribution of these factors that have significant difference in heart disease and non heart disease groups in the table, plots are done for age, cholesterol, sex, and chest pain type. 
+
+
+# II. Methodology for Analysis
+
+
+## 1. Logistic Regression model
+
+
+As the response variable heart disease is binary with values Normal (0) and Heart Disease (1), Logistic regression model and its extension models are fitted. This include logistic model with all available covariates and regularization method where we do the penalized logistic regression.
+
+
+In order to fit the penalized logistic regression, Lasso (Least Absolute Shrinkage and Selection Operator) is considered. To find the tuning parameter $\lambda$, 10-fold cross validation on a grid of 100 possible $\lambda$ values are proceeded within the training set (80% of whole data set) to select the $\lambda$ which yields the lowest average test error rate. With the best $\lambda$, LASSO selected variables are generated and fit into logistic model.
+
+
+```{r include=FALSE}
+# Logistic model with all predictors
+M1 = glm(HeartDisease ~ . , data = heart, family = binomial)
+summary(M1)
+
+set.seed(100)
+#randomly selected 80% as training set for hyper-parameters
+trainset <- sample_frac(heart, 0.8)
+# Logistic model with LASSO predictors
+lambda_grid = 10^seq(5,-2,length=100)
+x = model.matrix(HeartDisease~., data=trainset)
+y = as.integer(trainset$HeartDisease)
+lasso.mod=glmnet(x, y, alpha=1, family="binomial", lambda=lambda_grid)
+cv.out = cv.glmnet(x, y, family = "binomial", alpha = 1)
+lasso.mod2=glmnet(x,y, family="binomial", alpha=1)
+cv_fit <- cv.glmnet(x,y,alpha=1, lambda=lambda_grid, family="binomial")
+opt_lambda <- cv.out$lambda[which.min(cv.out$cvm)]
+opt_lambda #0.007847
+lasso.coef = predict(lasso.mod2, type = "coefficients", s = opt_lambda)
+lasso.coef
+
+M2 = glm(HeartDisease ~ .-RestingECG - MaxHR , data = heart, family = binomial)
+summary(M2)
+
+```
+
+
+## 2. K-Nearest Neighbors
+
+
+K-Nearest Neighbor model is fitted with all the 11 covariates. The best number of neighbors K will be selected by using 10-fold cross validation inside the training set again. K with highest accuracy will be selected as the best number of neighbors and used in the kNN model prediction.
+
+
+```{r include=FALSE}
+set.seed(10)
+ks <- seq(1,11,1)
+trControl <- trainControl(method="cv", number=10)
+fit_knn <- train(as.factor(HeartDisease) ~ .,
+             method     = "knn",
+             tuneGrid   = expand.grid(k = 1:11),
+             trControl  = trControl,
+             metric     = "Accuracy",
+             data       = trainset)
+best_K <- fit_knn$results$k[which.max(fit_knn$results$Accuracy)]
+best_K #8
+M3 <- knn3(as.factor(HeartDisease) ~ ., data=heart, k=8)
+```
+
+
+
+## 3. Random Forest
+
+
+Random Forest model is also performed. The best number of variable to random sample as candidates at each split is selected by Cross-validation within the training set created earlier.
+
+
+
+# III. Results
+
+
+## 1. Hyper-parameter Outputs by Cross-validation on Training Set:
+
+
+As described previously, the hyper-parameters are selected by cross-validation on the training set, which is a random sample that takes 80% of the whole data set after cleaning. The Lasso selected variables for Logistic regression are Chest pain type, Resting blood pressure, Cholesterol, Fasting blood sugar, Exercise-induced angina, Oldpeak of ST, ST slope. Best K for kNN model is 8. The number of variable to random sample as candidates at each split is 2 for random forest model.
+
+
+
+## 2. Select the Best Model by Prediction Performance
+
+```{r include=FALSE}
+# conduct 10 fold CV to compare test performance
+set.seed(10)
+K = 10
+n = nrow(heart)
+n_models = 4
+permutation = sample(1:n)  
+test_error_fold = matrix(0, K, n_models)
+sensititivy_fold = matrix(0, K, n_models)
+specificity_fold = matrix(0, K, n_models)
+for (j in 1:K) {
+  # 1. extract indices of units in the pseudo-test set for split j
+  pseudotest = heart[permutation[floor((j-1)*n/K+1) : floor(j*n/K)], ]  
+  # 2. extract indices of units in the pseudo-training set for split j
+  pseudotrain = heart[setdiff(1:n, pseudotest), ]
+  # 3. fit all models of interest
+  m1 = glm(as.factor(HeartDisease) ~ ., data = pseudotrain, family = binomial)
+  m2 = glm(as.factor(HeartDisease) ~ .-RestingECG - MaxHR , data = pseudotrain, family = binomial)
+  m3 = knn3(as.factor(HeartDisease) ~ ., data=pseudotrain, k=8)
+  m4 = randomForest(as.factor(HeartDisease)~., mtry = 2, data = pseudotrain, importance = T)
+  # 4. Compute Performance on each model
+  for (i in 1:n_models) {
+    if (i==3) {
+      probabilities = eval(m3) |> predict(pseudotest, type="class")
+      results = confusionMatrix(probabilities, true.classes, positive = "1")
+      test_error_fold[j, i] = 1 - results$overall["Accuracy"]
+      sensititivy_fold[j, i] = results$byClass["Sensitivity"]
+      specificity_fold[j, i] = results$byClass["Specificity"]
+    }
+    if (i==4) {
+      probabilities = eval(m4) |> predict(pseudotest, type = "response")
+      results = confusionMatrix(probabilities, true.classes, positive = "1")
+      test_error_fold[j, i] = 1 - results$overall["Accuracy"]
+      sensititivy_fold[j, i] = results$byClass["Sensitivity"]
+      specificity_fold[j, i] = results$byClass["Specificity"]
+    }
+    if(i==1 | i==2 ) {
+      probabilities = eval(parse(text = paste0("m", i))) |> predict(pseudotest, type = "response")
+      predicted.classes = factor(ifelse(probabilities > 0.5, 1, 0), levels = 0:1)
+      true.classes = factor(pseudotest$HeartDisease, levels = 0:1)
+      results = confusionMatrix(predicted.classes, true.classes, positive = "1")
+      test_error_fold[j, i] = 1 - results$overall["Accuracy"]
+      sensititivy_fold[j, i] = results$byClass["Sensitivity"]
+      specificity_fold[j, i] = results$byClass["Specificity"]
+    }
+    
+    #results = confusionMatrix(predicted.classes, true.classes, positive = "1")
+    #test_error_fold[j, i] = 1 - results$overall["Accuracy"]
+    #sensititivy_fold[j, i] = results$byClass["Sensitivity"]
+    #specificity_fold[j, i] = results$byClass["Specificity"]
+  }
+}
+# average across splits to obtain CV estimate of test MSE
+test_error_cvs = round(colMeans(test_error_fold), 5)
+sensitivity_cvs = round(colMeans(sensititivy_fold), 5)
+specificity_cvs = round(colMeans(specificity_fold), 5)  
+models = c("Model 1", "Model 2", "Model 3", "Model 4")
+descriptions = c("Logistic - All", "Logistic - Lasso", "KNN", "Random Forest")
+results = cbind(models, descriptions, test_error_cvs, sensitivity_cvs, specificity_cvs)
+colnames(results) = c("Model", "Description", "Test Error Rate", "Sensitivity", "Specificity")
+#results
+```
+
+
+
+By conducting 10-fold Cross-Validation with the four candidate models (Logistic-All, Logistic-Lasso, KNN, Random Forest), the test performance is described in *Table 2. Results of Four Models from 10-fold Cross-Validation*. The probability cutoff we select is the default 0.5 for logistic prediction, because the response variable is balanced. It is clear that from the table, Random Forest model has the best performance among the four models. Random Forest model with mtry=2 has the lowest test error rate (0.009)/highest accuracy, highest specificity (0.987) and sensitivity (0.995). The worst performance is from KNN with K=9. Logistic Lasso has the second best performance, slightly better than Logistic with all variables.
+
+
+
+The influence of each variable on model in Random Forest is shown in *Figure 2. Each Variable's Influence on Random Forest Model*. ST_slope, ChestpainType, and Oldpeak are the most influential factors. 
+
+
+
+To examine the error rate versus the number of trees, the result is shown in *Figure 3. Error Rate vs. Number of Trees in Random Forest Model*. There is little change in error rate after about 150 trees.
+
+
+
+The confusion matrix of random forest is shown in *Table 3. Confusion Matrix of Best Model - Random Forest*.
+
+
+
+## 3. Other Model Results
+
+
+Other than Random Forest, Logistic with Lasso selected variables is the second best model in terms of test error rate, sensitivity, specificity. The model summary of the Logistic with Lasso selected variables is shown as *Table 4. Summary of Logistic with Lasso Selected Variables*. From Table 4, the significant factors are Age (p-value=0.015), Sex (<0.001), ChestpainType (<0.001 for 3 levels), ExerciseAngina (<0.001), Oldpead (0.003), ST_slope(flat=0.014, up=0.030). Among these,  Male have higher odds compared to women; Chest pain ASY type has higher odds compared to type ATA, NAP, TA; Exercise Angina Yes has higher odds than No; ST slope flat and up positions have seperately higher and lower odds compared to the reference group.
+
+
+
+## 4. ROC comparison
+
+
+As in *Figure 4. ROC Curve Comparison on a Single Test Set*, we split a new train/test set with ratio 7:3, and the ROC curves are shown in the plot. Similarly, Random Forest performs best.
+
+
+
+# Discussion
+
+## 1. Conclusion
+
+
+
+## 2. Comments
+
+
+
+
+\newpage
+
+# Appendix
+
+
+### List of Figures
+
+
+**Figure 1. Exploratory Data Analysis - Cholesterol, Age, Sex, Chest Pain**
+
+
+```{r echo=FALSE}
+p_cho <- heart |> ggplot(aes(x=Cholesterol,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Cholesterol Density by Heart Disease") + xlab("Cholesterol(mm/dl)") 
+
+p_age <- heart |> ggplot(aes(x=Age,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Age Density by heart disease") + xlab("age(year)")
+p_sex <- heart |> ggplot(aes(x=HeartDisease, fill=Sex)) + geom_bar(alpha=.6) + labs(title="Bar of Heart Disease by Sex") + scale_fill_manual(values=c("firebrick2", "dodgerblue1")) + theme_classic()  + coord_flip()
+p_chest <- heart |> ggplot(aes(x=HeartDisease, fill=ChestPainType)) + geom_bar(alpha=.7) + labs(title="Bar of Heart Disease by Chest Pain") + scale_fill_manual(values=c( "#4E84C4", "#D55E00","#C3D7A4", "#FFDB6D")) + theme_classic()  + coord_flip()
+#p_exer <- heart |> ggplot(aes(x=HeartDisease, fill=ExerciseAngina)) + geom_bar(alpha=.6) + labs(title="bar plot #of heart disease by Exercise Angina groups") + scale_fill_manual(values=c("#56B4E9", "#F0E442")) + #theme_classic() + theme(aspect.ratio = 1/5) + coord_flip()
+ggarrange(p_cho, p_age, p_sex, p_chest, ncol = 2, nrow=2)
+```
+
+
+
+
+**Figure 2. Each Variable's Influence on Random Forest Model**
+
+
+```{r echo=FALSE}
+set.seed(2)
+grid <- data.frame(mtry = c(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11))
+control <- trainControl(method="cv", number = 10)
+train_rf <-  train(x, as.factor(y), 
+                   method = "rf", 
+                   ntree = 150,
+                   trControl = control,
+                   tuneGrid = grid,
+                   nSamp = 5000)
+bestmtry <- train_rf$results$mtry[which.max(train_rf$results$Accuracy)]
+#bestmtry #2
+M4 <- randomForest(HeartDisease~., mtry = 2, data = heart, importance = T)
+varImpPlot(M4, main = "Each variable's influence on Random Forest model")
+
+```
+
+
+
+
+**Figure 3. Error Rate vs. Number of Trees in Random Forest Model**
+
+
+```{r echo=FALSE}
+plot(M4, main="Error rate vs. number of trees in Random Forest model")
+```
+
+
+
+**Figure 4. ROC Curve Comparison on a Single Test Set**
+
+
+```{r include=FALSE}
+library(pROC)
+
+set.seed(1)
+sample <- sample(c(TRUE, FALSE), nrow(heart), replace=TRUE, prob=c(0.7,0.3))
+train  <- heart[sample, ]
+test   <- heart[!sample, ]
+
+m1 = glm(as.factor(HeartDisease) ~ ., data = test, family = binomial)
+m2 = glm(as.factor(HeartDisease) ~ .-RestingECG - MaxHR , data = test, family = binomial)
+m3 = knn3(as.factor(HeartDisease) ~ ., data=test, k=8)
+m4 = randomForest(as.factor(HeartDisease)~., mtry = 2, data = test, importance = T)
+
+
+probabilities1 = eval(m1) |> predict(test, type = "response")
+predicted.classes1 = factor(ifelse(probabilities1 > 0.5, 1, 0), levels = 0:1)
+
+probabilities2 = eval(m2) |> predict(test, type = "response")
+predicted.classes2 = factor(ifelse(probabilities2 > 0.5, 1, 0), levels = 0:1)
+
+probabilities3 = eval(m3) |> predict(test, type="class")
+probabilities4 = eval(m4) |> predict(test, type = "response")
+true_values <- test$HeartDisease
+
+roc_rf = roc(as.numeric(true_values), as.numeric(probabilities4)) #  ROC curve creation
+roc_kNN = roc(as.numeric(true_values), as.numeric(probabilities3)) 
+roc_Logistic_Lasso = roc(as.numeric(true_values), as.numeric(predicted.classes2))
+roc_Logistic_All = roc(as.numeric(true_values), as.numeric(predicted.classes1))
+```
+
+```{r echo=FALSE}
+
+ggroc(list("Random Forest" = roc_rf, "kNN" = roc_kNN, "Logistic All" = roc_Logistic_All, "Logistic Lasso" = roc_Logistic_Lasso)) +
+  theme(legend.title = element_blank()) +
+  geom_segment(aes(x = 1, xend = 0, y = 0, yend = 1), color = "black", linetype = "dashed") +
+  xlab("Sensitivity") +
+  ylab("Specificity") +
+  ggtitle("ROC curve comparison") + theme_classic()
+  
+
+```
+
+
+
+
+**Figure 5. Confusion Matrix of Best Model - Random Forest**
+
+
+```{r echo=FALSE}
+p44 = eval(M4) |> predict(test, type = "response")
+x <- confusionMatrix(p44, true_values, positive = "1")
+table <- data.frame(x$table)
+
+plotTable <- table %>%
+  mutate(goodbad = ifelse(table$Prediction == table$Reference, "good", "bad")) %>%
+  group_by(Reference) %>%
+  mutate(prop = Freq/sum(Freq))
+
+ggplot(data = plotTable, mapping = aes(x = Reference, y = Prediction, fill = goodbad, alpha = prop)) +
+  geom_tile() +
+  geom_text(aes(label = Freq), vjust = .5, fontface  = "bold", alpha = 1) +
+  scale_fill_manual(values = c(good = "blue3", bad = "pink")) +
+  theme_bw() +
+  xlim(rev(levels(table$Reference)))
+
+```
+
+
+
+\newpage
+
+### List of Tables
+
+
+**Table 1. Exploratory Data Analysis**
+
+
+```{r echo=FALSE}
+# table1. EDA of data set
+# EDA table for summarizing the variables group by the response variable heart disease
+heart1 <- heart|> mutate(HeartDisease=factor(HeartDisease, levels=c(0,1), labels=c("Normal", "Heart Disease")))
+table1(~ Sex + Age + ChestPainType + RestingBP + Cholesterol + FastingBS + RestingECG + MaxHR + ExerciseAngina + Oldpeak + ST_Slope | HeartDisease, data=heart1, overall = "Total")
+
+```
+
+\newpage
+
+
+**Table 2. Results of Four Models from 10-fold Cross-Validation**
+
+
+```{r echo=FALSE}
+results <- as.data.frame(results)
+results$`Test Error Rate` <- round(as.numeric(results$`Test Error Rate`),3)
+results$Sensitivity<- round(as.numeric(results$`Sensitivity`),3)
+results$Specificity <- round(as.numeric(results$Specificity), 3)
+results[,2:5] |> kbl() |> kable_styling()
+```
+
+
+
+
+
+
+
+**Table 3. Summary of Logistic with Lasso Selected Variables**
+
+
+```{r echo=FALSE}
+slog <- summary(M2)
+slog <- as.data.frame(slog$coefficients)
+slog$Estimate <- round(slog$Estimate,3)
+slog$`Std. Error` <- round(slog$`Std. Error`, 3)
+slog[,-3] |> kbl() |> kable_styling()
+```
+

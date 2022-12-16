@@ -1,0 +1,7 @@
+name: "my-website"
+output_dir: "."
+navbar:
+  titel: "My Website"
+  left:
+    - text: "HOME"
+      hred: index.html

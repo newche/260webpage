@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Jinyi Che" />
+
+<meta name="date" content="2022-12-16" />
+
+<title>260 final</title>
+
+<script src="site_libs/header-attrs-2.18/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/bootstrap.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/table1-1.0/table1_defaults.css" rel="stylesheet" />
+<script src="site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="site_libs/lightable-0.0.1/lightable.css" rel="stylesheet" />
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+<style type="text/css">
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #adb5bd;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script type="text/javascript">
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark the anchor link active (and if it's in a dropdown, also mark that active)
+  var dropdown = menuAnchor.closest('li.dropdown');
+  if (window.bootstrap) { // Bootstrap 4+
+    menuAnchor.addClass('active');
+    dropdown.find('> .dropdown-toggle').addClass('active');
+  } else { // Bootstrap 3
+    menuAnchor.parent().addClass('active');
+    dropdown.addClass('active');
+  }
+
+  // Navbar adjustments
+  var navHeight = $(".navbar").first().height() + 15;
+  var style = document.createElement('style');
+  var pt = "padding-top: " + navHeight + "px; ";
+  var mt = "margin-top: -" + navHeight + "px; ";
+  var css = "";
+  // offset scroll position for anchor links (for fixed navbar)
+  for (var i = 1; i <= 6; i++) {
+    css += ".section h" + i + "{ " + pt + mt + "}\n";
+  }
+  style.innerHTML = "body {" + pt + "padding-bottom: 40px; }\n" + css;
+  document.head.appendChild(style);
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-bs-toggle="collapse" data-target="#navbar" data-bs-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html"></a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li class="dropdown-header">HOME</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">260 final</h1>
+<h4 class="author">Jinyi Che</h4>
+<h4 class="date">12/16/2022</h4>
+
+</div>
+
+
+<div id="i.-introduction" class="section level1">
+<h1>I. Introduction</h1>
+<div id="research-purpose" class="section level2">
+<h2>1. Research Purpose</h2>
+<p>Cardiovascular diseases (CVDs) are the 1st cause of death globally, it is predicted that xxx people will die of CVDs. Heart failure is a common event caused by CVDs. Early detection and continuous health management are recommended for people who have high risk for CVDs. With the data set that contains 11 covariates that can be used to predict heart failure, our study aims to study how the important factors are related to heart attach event and to make prediction upon the given factors.</p>
+</div>
+<div id="dataset" class="section level2">
+<h2>2. Dataset</h2>
+<p>To be more detailed, the data set was created by combining 5 heart data sets. The combined final version data set contains 11 factors that are related to heart failure. The factors include basic information such like Age, Sex; physical exam results such like Chest pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, max heart rate, exercise-induced angina, oldpeak of ST, ST slope; and binary response variable heart disease.</p>
+<p>To clean the data, entries that with cholesterol being 0 are removed. Entries that with negative Oldpeak and 0 blood pressure are also removed. After cleaning, there are 745 rows in the data set and 12 variables related to heart failure.</p>
+</div>
+<div id="eda" class="section level2">
+<h2>3. EDA</h2>
+<p>To have a better understanding of the data, we perform the exploratory data analysis using a table to summarize all the variables by the response variable heart disease. Based on table, male older than 55 years old have higher risk of heart disease; those who have heart disease are likely to have ASY (Asymptomatic) pain chest type, flat peak exercise ST segment slope, and blood sugar &gt; 120 mg/dl. To further see the distribution of these factors that have significant difference in heart disease and non heart disease groups in the table, plots are done for age, cholesterol, sex, and chest pain type.</p>
+</div>
+</div>
+<div id="ii.-methodology-for-analysis" class="section level1">
+<h1>II. Methodology for Analysis</h1>
+<div id="logistic-regression-model" class="section level2">
+<h2>1. Logistic Regression model</h2>
+<p>As the response variable heart disease is binary with values Normal (0) and Heart Disease (1), Logistic regression model and its extension models are fitted. This include logistic model with all available covariates and regularization method where we do the penalized logistic regression.</p>
+<p>In order to fit the penalized logistic regression, Lasso (Least Absolute Shrinkage and Selection Operator) is considered. To find the tuning parameter <span class="math inline">\(\lambda\)</span>, 10-fold cross validation on a grid of 100 possible <span class="math inline">\(\lambda\)</span> values are proceeded within the training set (80% of whole data set) to select the <span class="math inline">\(\lambda\)</span> which yields the lowest average test error rate. With the best <span class="math inline">\(\lambda\)</span>, LASSO selected variables are generated and fit into logistic model.</p>
+</div>
+<div id="k-nearest-neighbors" class="section level2">
+<h2>2. K-Nearest Neighbors</h2>
+<p>K-Nearest Neighbor model is fitted with all the 11 covariates. The best number of neighbors K will be selected by using 10-fold cross validation inside the training set again. K with highest accuracy will be selected as the best number of neighbors and used in the kNN model prediction.</p>
+</div>
+<div id="random-forest" class="section level2">
+<h2>3. Random Forest</h2>
+<p>Random Forest model is also performed. The best number of variable to random sample as candidates at each split is selected by Cross-validation within the training set created earlier.</p>
+</div>
+</div>
+<div id="iii.-results" class="section level1">
+<h1>III. Results</h1>
+<div id="hyper-parameter-outputs-by-cross-validation-on-training-set" class="section level2">
+<h2>1. Hyper-parameter Outputs by Cross-validation on Training Set:</h2>
+<p>As described previously, the hyper-parameters are selected by cross-validation on the training set, which is a random sample that takes 80% of the whole data set after cleaning. The Lasso selected variables for Logistic regression are Chest pain type, Resting blood pressure, Cholesterol, Fasting blood sugar, Exercise-induced angina, Oldpeak of ST, ST slope. Best K for kNN model is 8. The number of variable to random sample as candidates at each split is 2 for random forest model.</p>
+</div>
+<div id="select-the-best-model-by-prediction-performance" class="section level2">
+<h2>2. Select the Best Model by Prediction Performance</h2>
+<p>By conducting 10-fold Cross-Validation with the four candidate models (Logistic-All, Logistic-Lasso, KNN, Random Forest), the test performance is described in <em>Table 2. Results of Four Models from 10-fold Cross-Validation</em>. The probability cutoff we select is the default 0.5 for logistic prediction, because the response variable is balanced. It is clear that from the table, Random Forest model has the best performance among the four models. Random Forest model with mtry=2 has the lowest test error rate (0.009)/highest accuracy, highest specificity (0.987) and sensitivity (0.995). The worst performance is from KNN with K=9. Logistic Lasso has the second best performance, slightly better than Logistic with all variables.</p>
+<p>The influence of each variable on model in Random Forest is shown in <em>Figure 2. Each Variable’s Influence on Random Forest Model</em>. ST_slope, ChestpainType, and Oldpeak are the most influential factors.</p>
+<p>To examine the error rate versus the number of trees, the result is shown in <em>Figure 3. Error Rate vs. Number of Trees in Random Forest Model</em>. There is little change in error rate after about 150 trees.</p>
+<p>The confusion matrix of random forest is shown in <em>Table 3. Confusion Matrix of Best Model - Random Forest</em>.</p>
+</div>
+<div id="other-model-results" class="section level2">
+<h2>3. Other Model Results</h2>
+<p>Other than Random Forest, Logistic with Lasso selected variables is the second best model in terms of test error rate, sensitivity, specificity. The model summary of the Logistic with Lasso selected variables is shown as <em>Table 4. Summary of Logistic with Lasso Selected Variables</em>. From Table 4, the significant factors are Age (p-value=0.015), Sex (&lt;0.001), ChestpainType (&lt;0.001 for 3 levels), ExerciseAngina (&lt;0.001), Oldpead (0.003), ST_slope(flat=0.014, up=0.030). Among these, Male have higher odds compared to women; Chest pain ASY type has higher odds compared to type ATA, NAP, TA; Exercise Angina Yes has higher odds than No; ST slope flat and up positions have seperately higher and lower odds compared to the reference group.</p>
+</div>
+<div id="roc-comparison" class="section level2">
+<h2>4. ROC comparison</h2>
+<p>As in <em>Figure 4. ROC Curve Comparison on a Single Test Set</em>, we split a new train/test set with ratio 7:3, and the ROC curves are shown in the plot. Similarly, Random Forest performs best.</p>
+</div>
+</div>
+<div id="discussion" class="section level1">
+<h1>Discussion</h1>
+<div id="conclusion" class="section level2">
+<h2>1. Conclusion</h2>
+</div>
+<div id="comments" class="section level2">
+<h2>2. Comments</h2>
+<div style="page-break-after: always;"></div>
+</div>
+</div>
+<div id="appendix" class="section level1">
+<h1>Appendix</h1>
+<div id="list-of-figures" class="section level3">
+<h3>List of Figures</h3>
+<p><strong>Figure 1. Exploratory Data Analysis - Cholesterol, Age, Sex, Chest Pain</strong></p>
+<p><img src="260-page_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p><strong>Figure 2. Each Variable’s Influence on Random Forest Model</strong></p>
+<p><img src="260-page_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p><strong>Figure 3. Error Rate vs. Number of Trees in Random Forest Model</strong></p>
+<p><img src="260-page_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p><strong>Figure 4. ROC Curve Comparison on a Single Test Set</strong></p>
+<p><img src="260-page_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p><strong>Figure 5. Confusion Matrix of Best Model - Random Forest</strong></p>
+<p><img src="260-page_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<div style="page-break-after: always;"></div>
+</div>
+<div id="list-of-tables" class="section level3">
+<h3>List of Tables</h3>
+<p><strong>Table 1. Exploratory Data Analysis</strong></p>
+<div class="Rtable1"><table class="Rtable1">
+<thead>
+<tr>
+<th class='rowlabel firstrow lastrow'></th>
+<th class='firstrow lastrow'><span class='stratlabel'>Normal<br><span class='stratn'>(N=389)</span></span></th>
+<th class='firstrow lastrow'><span class='stratlabel'>Heart Disease<br><span class='stratn'>(N=356)</span></span></th>
+<th class='firstrow lastrow'><span class='stratlabel'>Total<br><span class='stratn'>(N=745)</span></span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class='rowlabel firstrow'>Sex</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>F</td>
+<td>142 (36.5%)</td>
+<td>40 (11.2%)</td>
+<td>182 (24.4%)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>M</td>
+<td class='lastrow'>247 (63.5%)</td>
+<td class='lastrow'>316 (88.8%)</td>
+<td class='lastrow'>563 (75.6%)</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>Age</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>Mean (SD)</td>
+<td>50.2 (9.29)</td>
+<td>55.9 (8.82)</td>
+<td>52.9 (9.49)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>Median [Min, Max]</td>
+<td class='lastrow'>51.0 [28.0, 76.0]</td>
+<td class='lastrow'>57.0 [31.0, 77.0]</td>
+<td class='lastrow'>54.0 [28.0, 77.0]</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>ChestPainType</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>ASY</td>
+<td>96 (24.7%)</td>
+<td>274 (77.0%)</td>
+<td>370 (49.7%)</td>
+</tr>
+<tr>
+<td class='rowlabel'>ATA</td>
+<td>145 (37.3%)</td>
+<td>21 (5.9%)</td>
+<td>166 (22.3%)</td>
+</tr>
+<tr>
+<td class='rowlabel'>NAP</td>
+<td>122 (31.4%)</td>
+<td>46 (12.9%)</td>
+<td>168 (22.6%)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>TA</td>
+<td class='lastrow'>26 (6.7%)</td>
+<td class='lastrow'>15 (4.2%)</td>
+<td class='lastrow'>41 (5.5%)</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>RestingBP</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>Mean (SD)</td>
+<td>130 (16.2)</td>
+<td>136 (18.0)</td>
+<td>133 (17.3)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>Median [Min, Max]</td>
+<td class='lastrow'>130 [94.0, 190]</td>
+<td class='lastrow'>136 [92.0, 200]</td>
+<td class='lastrow'>130 [92.0, 200]</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>Cholesterol</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>Mean (SD)</td>
+<td>239 (55.3)</td>
+<td>251 (62.5)</td>
+<td>245 (59.1)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>Median [Min, Max]</td>
+<td class='lastrow'>232 [85.0, 564]</td>
+<td class='lastrow'>246 [100, 603]</td>
+<td class='lastrow'>237 [85.0, 603]</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>FastingBS</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>Blood Sugar > 120 mg/dl</td>
+<td>346 (88.9%)</td>
+<td>274 (77.0%)</td>
+<td>620 (83.2%)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>otherwise</td>
+<td class='lastrow'>43 (11.1%)</td>
+<td class='lastrow'>82 (23.0%)</td>
+<td class='lastrow'>125 (16.8%)</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>RestingECG</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>LVH</td>
+<td>81 (20.8%)</td>
+<td>95 (26.7%)</td>
+<td>176 (23.6%)</td>
+</tr>
+<tr>
+<td class='rowlabel'>Normal</td>
+<td>257 (66.1%)</td>
+<td>188 (52.8%)</td>
+<td>445 (59.7%)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>ST</td>
+<td class='lastrow'>51 (13.1%)</td>
+<td class='lastrow'>73 (20.5%)</td>
+<td class='lastrow'>124 (16.6%)</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>MaxHR</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>Mean (SD)</td>
+<td>149 (23.1)</td>
+<td>131 (22.3)</td>
+<td>140 (24.5)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>Median [Min, Max]</td>
+<td class='lastrow'>150 [69.0, 202]</td>
+<td class='lastrow'>130 [71.0, 195]</td>
+<td class='lastrow'>140 [69.0, 202]</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>ExerciseAngina</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>N</td>
+<td>339 (87.1%)</td>
+<td>119 (33.4%)</td>
+<td>458 (61.5%)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>Y</td>
+<td class='lastrow'>50 (12.9%)</td>
+<td class='lastrow'>237 (66.6%)</td>
+<td class='lastrow'>287 (38.5%)</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>Oldpeak</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>Mean (SD)</td>
+<td>0.395 (0.678)</td>
+<td>1.46 (1.15)</td>
+<td>0.903 (1.07)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>Median [Min, Max]</td>
+<td class='lastrow'>0 [0, 4.20]</td>
+<td class='lastrow'>1.50 [0, 6.20]</td>
+<td class='lastrow'>0.500 [0, 6.20]</td>
+</tr>
+<tr>
+<td class='rowlabel firstrow'>ST_Slope</td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+<td class='firstrow'></td>
+</tr>
+<tr>
+<td class='rowlabel'>Down</td>
+<td>11 (2.8%)</td>
+<td>32 (9.0%)</td>
+<td>43 (5.8%)</td>
+</tr>
+<tr>
+<td class='rowlabel'>Flat</td>
+<td>75 (19.3%)</td>
+<td>279 (78.4%)</td>
+<td>354 (47.5%)</td>
+</tr>
+<tr>
+<td class='rowlabel lastrow'>Up</td>
+<td class='lastrow'>303 (77.9%)</td>
+<td class='lastrow'>45 (12.6%)</td>
+<td class='lastrow'>348 (46.7%)</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div style="page-break-after: always;"></div>
+<p><strong>Table 2. Results of Four Models from 10-fold Cross-Validation</strong></p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+Description
+</th>
+<th style="text-align:right;">
+Test Error Rate
+</th>
+<th style="text-align:right;">
+Sensitivity
+</th>
+<th style="text-align:right;">
+Specificity
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+Logistic - All
+</td>
+<td style="text-align:right;">
+0.130
+</td>
+<td style="text-align:right;">
+0.871
+</td>
+<td style="text-align:right;">
+0.868
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Logistic - Lasso
+</td>
+<td style="text-align:right;">
+0.127
+</td>
+<td style="text-align:right;">
+0.871
+</td>
+<td style="text-align:right;">
+0.873
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+KNN
+</td>
+<td style="text-align:right;">
+0.262
+</td>
+<td style="text-align:right;">
+0.729
+</td>
+<td style="text-align:right;">
+0.751
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Random Forest
+</td>
+<td style="text-align:right;">
+0.009
+</td>
+<td style="text-align:right;">
+0.992
+</td>
+<td style="text-align:right;">
+0.990
+</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Table 3. Summary of Logistic with Lasso Selected Variables</strong></p>
+<table class="table" style="margin-left: auto; margin-right: auto;">
+<thead>
+<tr>
+<th style="text-align:left;">
+</th>
+<th style="text-align:right;">
+Estimate
+</th>
+<th style="text-align:right;">
+Std. Error
+</th>
+<th style="text-align:right;">
+Pr(&gt;|z|)
+</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left;">
+(Intercept)
+</td>
+<td style="text-align:right;">
+-5.587
+</td>
+<td style="text-align:right;">
+1.354
+</td>
+<td style="text-align:right;">
+0.0000368
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Age
+</td>
+<td style="text-align:right;">
+0.033
+</td>
+<td style="text-align:right;">
+0.014
+</td>
+<td style="text-align:right;">
+0.0148479
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+SexM
+</td>
+<td style="text-align:right;">
+1.853
+</td>
+<td style="text-align:right;">
+0.312
+</td>
+<td style="text-align:right;">
+0.0000000
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ChestPainTypeATA
+</td>
+<td style="text-align:right;">
+-1.683
+</td>
+<td style="text-align:right;">
+0.350
+</td>
+<td style="text-align:right;">
+0.0000015
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ChestPainTypeNAP
+</td>
+<td style="text-align:right;">
+-1.565
+</td>
+<td style="text-align:right;">
+0.298
+</td>
+<td style="text-align:right;">
+0.0000002
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ChestPainTypeTA
+</td>
+<td style="text-align:right;">
+-1.608
+</td>
+<td style="text-align:right;">
+0.475
+</td>
+<td style="text-align:right;">
+0.0007018
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+RestingBP
+</td>
+<td style="text-align:right;">
+0.012
+</td>
+<td style="text-align:right;">
+0.007
+</td>
+<td style="text-align:right;">
+0.1103731
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Cholesterol
+</td>
+<td style="text-align:right;">
+0.003
+</td>
+<td style="text-align:right;">
+0.002
+</td>
+<td style="text-align:right;">
+0.1810311
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+FastingBSotherwise
+</td>
+<td style="text-align:right;">
+0.298
+</td>
+<td style="text-align:right;">
+0.328
+</td>
+<td style="text-align:right;">
+0.3630205
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ExerciseAnginaY
+</td>
+<td style="text-align:right;">
+0.887
+</td>
+<td style="text-align:right;">
+0.263
+</td>
+<td style="text-align:right;">
+0.0007305
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+Oldpeak
+</td>
+<td style="text-align:right;">
+0.418
+</td>
+<td style="text-align:right;">
+0.140
+</td>
+<td style="text-align:right;">
+0.0027933
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ST_SlopeFlat
+</td>
+<td style="text-align:right;">
+1.276
+</td>
+<td style="text-align:right;">
+0.520
+</td>
+<td style="text-align:right;">
+0.0141500
+</td>
+</tr>
+<tr>
+<td style="text-align:left;">
+ST_SlopeUp
+</td>
+<td style="text-align:right;">
+-1.220
+</td>
+<td style="text-align:right;">
+0.563
+</td>
+<td style="text-align:right;">
+0.0302676
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+
+
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
