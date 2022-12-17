@@ -135,6 +135,8 @@ colnames(results) = c("Model", "Description", "Test Error Rate", "Sensitivity", 
 ```
 
 
+### List of Tables
+
 
 **Table 1. Exploratory Data Analysis**
 
@@ -147,7 +149,7 @@ table1(~ Sex + Age + ChestPainType + RestingBP + Cholesterol + FastingBS + Resti
 
 ```
 
-\newpage
+
 
 
 **Table 2. Results of Four Models from 10-fold Cross-Validation**
@@ -162,6 +164,9 @@ results[,2:5] |> kbl() |> kable_styling()
 ```
 
 
+
+
+\newpage
 
 
 

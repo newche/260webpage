@@ -5,22 +5,22 @@ date: "12/16/2022"
 output: html_document
 ---
 
-
 # I. Introduction
 
-## 1. Research Purpose
+### 1. Research Purpose
 
-Cardiovascular diseases (CVDs) are the 1st cause of death globally, it is predicted that xxx people will die of CVDs. Heart failure is a common event caused by CVDs. Early detection and continuous health management are recommended for people who have high risk for CVDs. With the data set that contains 11 covariates that can be used to predict heart failure, our study aims to study how the important factors are related to heart attach event and to make prediction upon the given factors. 
-
-## 2. Dataset
+Cardiovascular diseases (CVDs) are the 1st cause of death globally. Heart failure is a common event caused by CVDs. Early detection and continuous health management are recommended for people who have high risk for CVDs. With the data set that contains 11 explanatory covariates that can be used to predict heart failure, our study aims to study how the important factors are related to heart attach event and to make prediction upon the given factors. 
 
 
-To be more detailed, the data set was created by combining 5 heart data sets. The combined final version data set contains 11 factors that are related to heart failure. The factors include basic information such like Age, Sex; physical exam results such like Chest pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, max heart rate, exercise-induced angina, oldpeak of ST, ST slope; and binary response variable heart disease. 
-
-To clean the data, entries that with cholesterol being 0 are removed. Entries that with negative Oldpeak and 0 blood pressure are also removed. After cleaning, there are 745 rows in the data set and 12 variables related to heart failure.
+### 2. Dataset
 
 
-## 3. EDA
+To be more detailed, the data set was created by combining 5 heart data sets. The combined final version data set contains 11 explanatory factors that are related to heart failure. The factors include basic information such like Age, Sex; physical exam results such like Chest pain type, resting blood pressure, cholesterol, fasting blood sugar, resting ECG, max heart rate, exercise-induced angina, oldpeak of ST, ST slope; and binary response variable heart disease. 
+
+To clean the data, entries that with cholesterol being 0 are removed. Entries that with negative Oldpeak and 0 blood pressure are also removed. After cleaning, there are 745 rows in the data set and 11 explanatory factors and 1 response variable related to heart failure.
+
+
+### 3. EDA - Exploratory Data Analysis
 
 
 ```{r include=FALSE}
@@ -48,13 +48,13 @@ heart <- heart |> mutate(FastingBS = factor(FastingBS, levels=c(0,1), labels=c("
 
 ```
 
-To have a better understanding of the data, we perform the exploratory data analysis using a table to summarize all the variables by the response variable heart disease. Based on table, male older than 55 years old have higher risk of heart disease; those who have heart disease are likely to have ASY (Asymptomatic) pain chest type, flat peak exercise ST segment slope, and blood sugar > 120 mg/dl. To further see the distribution of these factors that have significant difference in heart disease and non heart disease groups in the table, plots are done for age, cholesterol, sex, and chest pain type. 
+To have a better understanding of the data, we perform the exploratory data analysis using a table to summarize all the variables by the response variable heart disease. Based on table, male older than 55 years old have higher risk of heart disease; those who have heart disease are likely to have ASY (Asymptomatic) pain chest type, flat peak exercise ST segment slope, and blood sugar > 120 mg/dl. To further see the distribution of these factors that have significant difference in heart disease and non heart disease groups in the table, plots are done for age, cholesterol, sex, and chest pain type. EDA plots are arranged in *Figure 1. Exploratory Data Analysis - Cholesterol, Age, Sex, Chest Pain*. From the plots, similar trends can be seen for these four variables as from the table.
 
 
 # II. Methodology for Analysis
 
 
-## 1. Logistic Regression model
+### 1. Logistic Regression model
 
 
 As the response variable heart disease is binary with values Normal (0) and Heart Disease (1), Logistic regression model and its extension models are fitted. This include logistic model with all available covariates and regularization method where we do the penalized logistic regression.
@@ -90,10 +90,10 @@ summary(M2)
 ```
 
 
-## 2. K-Nearest Neighbors
+### 2. K-Nearest Neighbors
 
 
-K-Nearest Neighbor model is fitted with all the 11 covariates. The best number of neighbors K will be selected by using 10-fold cross validation inside the training set again. K with highest accuracy will be selected as the best number of neighbors and used in the kNN model prediction.
+K-Nearest Neighbor model is fitted with all the 11 explanatory covariates. The best number of neighbors K will be selected by using 10-fold cross validation inside the training set again. K with highest accuracy will be selected as the best number of neighbors and used in the kNN model prediction.
 
 
 ```{r include=FALSE}
@@ -113,24 +113,24 @@ M3 <- knn3(as.factor(HeartDisease) ~ ., data=heart, k=8)
 
 
 
-## 3. Random Forest
+### 3. Random Forest
 
 
-Random Forest model is also performed. The best number of variable to random sample as candidates at each split is selected by Cross-validation within the training set created earlier.
+Random Forest model is also performed. The best number of variable to random sample as candidates at each split is selected by Cross-validation within the training set created earlier. Number of trees are used as the default 150.
 
 
 
 # III. Results
 
 
-## 1. Hyper-parameter Outputs by Cross-validation on Training Set:
+### 1. Hyper-parameter Outputs by Cross-validation on Training Set:
 
 
 As described previously, the hyper-parameters are selected by cross-validation on the training set, which is a random sample that takes 80% of the whole data set after cleaning. The Lasso selected variables for Logistic regression are Chest pain type, Resting blood pressure, Cholesterol, Fasting blood sugar, Exercise-induced angina, Oldpeak of ST, ST slope. Best K for kNN model is 8. The number of variable to random sample as candidates at each split is 2 for random forest model.
 
 
 
-## 2. Select the Best Model by Prediction Performance
+### 2. Select the Best Model by Prediction Performance
 
 ```{r include=FALSE}
 # conduct 10 fold CV to compare test performance
@@ -205,36 +205,58 @@ The influence of each variable on model in Random Forest is shown in *Figure 2. 
 
 
 
-To examine the error rate versus the number of trees, the result is shown in *Figure 3. Error Rate vs. Number of Trees in Random Forest Model*. There is little change in error rate after about 150 trees.
+To examine the error rate versus the number of trees, the result is shown in *Figure 3. Error Rate vs. Number of Trees in Random Forest Model*. There is little change in error rate after about 150 trees. This makes the decision to use default 150 trees in random forest model valid.
 
 
 
-The confusion matrix of random forest is shown in *Table 3. Confusion Matrix of Best Model - Random Forest*.
+The confusion matrix of random forest is shown in *Table 3. Confusion Matrix of Best Model - Random Forest*. There are only 2 samples are false negative and 1 sample is false positive, which yields very low error rate.
 
 
 
-## 3. Other Model Results
+### 3. Other Model Results
 
 
 Other than Random Forest, Logistic with Lasso selected variables is the second best model in terms of test error rate, sensitivity, specificity. The model summary of the Logistic with Lasso selected variables is shown as *Table 4. Summary of Logistic with Lasso Selected Variables*. From Table 4, the significant factors are Age (p-value=0.015), Sex (<0.001), ChestpainType (<0.001 for 3 levels), ExerciseAngina (<0.001), Oldpead (0.003), ST_slope(flat=0.014, up=0.030). Among these,  Male have higher odds compared to women; Chest pain ASY type has higher odds compared to type ATA, NAP, TA; Exercise Angina Yes has higher odds than No; ST slope flat and up positions have seperately higher and lower odds compared to the reference group.
 
 
 
-## 4. ROC comparison
+### 4. ROC comparison
 
 
-As in *Figure 4. ROC Curve Comparison on a Single Test Set*, we split a new train/test set with ratio 7:3, and the ROC curves are shown in the plot. Similarly, Random Forest performs best.
+As in *Figure 4. ROC Curve Comparison on a Single Test Set*, we split a new train/test set with ratio 7:3, and the ROC curves are shown in the plot. Similarly, Random Forest performs best. 
 
 
 
 # Discussion
 
-## 1. Conclusion
+### 1. Conclusion
+
+
+In terms of model prediction performance, with probability cutoff being 0.05, random forest has the best performance with test error rate 0.9%. It was followed by Logistic with Lasso selected variables (test error=0.127), Logistic with all variables (0.130), and lastly KNN with K=8 (0.127).
 
 
 
-## 2. Comments
+To avoid heart disease, the models suggest that you should monitor how the heart and blood flow reacts to exercise frequently, try to exercise more and avoid type II diabetes, push max heart rate to higher.
 
+
+
+### 2. Comments
+
+
+We assume the analysis is mostly successful, because we compare models by several measurement (error rate, sensitivity, specificity) and we also come up with the best hyper-parameters by cross-validation. The conclusion comes from a combination of the results from the models.
+
+
+
+If there is more time, firstly we can fit more models, like PCA, boosting, etc. All the analysis can be conducted with more details. More variables can be incorporated if possible. 
+
+
+# Reference - Data source 
+
+
+fedesoriano. (September 2021). Heart Failure Prediction Dataset. Retrieved [Date Retrieved] from https://www.kaggle.com/fedesoriano/heart-failure-prediction.
+
+
+Every dataset used can be found under the Index of heart disease datasets from UCI Machine Learning Repository on the following link: https://archive.ics.uci.edu/ml/machine-learning-databases/heart-disease/
 
 
 
@@ -250,11 +272,10 @@ As in *Figure 4. ROC Curve Comparison on a Single Test Set*, we split a new trai
 
 
 ```{r echo=FALSE}
-p_cho <- heart |> ggplot(aes(x=Cholesterol,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Cholesterol Density by Heart Disease") + xlab("Cholesterol(mm/dl)") 
-
-p_age <- heart |> ggplot(aes(x=Age,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Age Density by heart disease") + xlab("age(year)")
-p_sex <- heart |> ggplot(aes(x=HeartDisease, fill=Sex)) + geom_bar(alpha=.6) + labs(title="Bar of Heart Disease by Sex") + scale_fill_manual(values=c("firebrick2", "dodgerblue1")) + theme_classic()  + coord_flip()
-p_chest <- heart |> ggplot(aes(x=HeartDisease, fill=ChestPainType)) + geom_bar(alpha=.7) + labs(title="Bar of Heart Disease by Chest Pain") + scale_fill_manual(values=c( "#4E84C4", "#D55E00","#C3D7A4", "#FFDB6D")) + theme_classic()  + coord_flip()
+p_cho <- heart |> ggplot(aes(x=Cholesterol,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Cholesterol Density by Heart Disease") + xlab("Cholesterol(mm/dl)")+ theme(plot.title=element_text(size=10))
+p_age <- heart |> ggplot(aes(x=Age,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Age Density by heart disease") + xlab("age(year)")+ theme(plot.title=element_text(size=10))
+p_sex <- heart |> ggplot(aes(x=HeartDisease, fill=Sex)) + geom_bar(alpha=.6) + labs(title="Bar of Heart Disease by Sex") + scale_fill_manual(values=c("firebrick2", "dodgerblue1")) + theme_classic()  + coord_flip()+ theme(plot.title=element_text(size=10))
+p_chest <- heart |> ggplot(aes(x=HeartDisease, fill=ChestPainType)) + geom_bar(alpha=.7) + labs(title="Bar of Heart Disease by Chest Pain") + scale_fill_manual(values=c( "#4E84C4", "#D55E00","#C3D7A4", "#FFDB6D")) + theme_classic()  + coord_flip()+ theme(plot.title=element_text(size=10))
 #p_exer <- heart |> ggplot(aes(x=HeartDisease, fill=ExerciseAngina)) + geom_bar(alpha=.6) + labs(title="bar plot #of heart disease by Exercise Angina groups") + scale_fill_manual(values=c("#56B4E9", "#F0E442")) + #theme_classic() + theme(aspect.ratio = 1/5) + coord_flip()
 ggarrange(p_cho, p_age, p_sex, p_chest, ncol = 2, nrow=2)
 ```
@@ -382,7 +403,7 @@ table1(~ Sex + Age + ChestPainType + RestingBP + Cholesterol + FastingBS + Resti
 
 ```
 
-\newpage
+
 
 
 **Table 2. Results of Four Models from 10-fold Cross-Validation**
@@ -399,6 +420,9 @@ results[,2:5] |> kbl() |> kable_styling()
 
 
 
+\newpage
+
+
 
 
 
@@ -412,4 +436,8 @@ slog$Estimate <- round(slog$Estimate,3)
 slog$`Std. Error` <- round(slog$`Std. Error`, 3)
 slog[,-3] |> kbl() |> kable_styling()
 ```
+
+
+
+
 

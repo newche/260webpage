@@ -138,15 +138,15 @@ colnames(results) = c("Model", "Description", "Test Error Rate", "Sensitivity", 
 ### List of Figures
 
 
+
 **Figure 1. Exploratory Data Analysis - Cholesterol, Age, Sex, Chest Pain**
 
 
 ```{r echo=FALSE}
-p_cho <- heart |> ggplot(aes(x=Cholesterol,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Cholesterol Density by Heart Disease") + xlab("Cholesterol(mm/dl)") 
-
-p_age <- heart |> ggplot(aes(x=Age,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Age Density by heart disease") + xlab("age(year)")
-p_sex <- heart |> ggplot(aes(x=HeartDisease, fill=Sex)) + geom_bar(alpha=.6) + labs(title="Bar of Heart Disease by Sex") + scale_fill_manual(values=c("firebrick2", "dodgerblue1")) + theme_classic()  + coord_flip()
-p_chest <- heart |> ggplot(aes(x=HeartDisease, fill=ChestPainType)) + geom_bar(alpha=.7) + labs(title="Bar of Heart Disease by Chest Pain") + scale_fill_manual(values=c( "#4E84C4", "#D55E00","#C3D7A4", "#FFDB6D")) + theme_classic()  + coord_flip()
+p_cho <- heart |> ggplot(aes(x=Cholesterol,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Cholesterol Density by Heart Disease") + xlab("Cholesterol(mm/dl)")+ theme(plot.title=element_text(size=10))
+p_age <- heart |> ggplot(aes(x=Age,group=HeartDisease, fill=HeartDisease)) + geom_density(adjust=1,alpha=.4) + theme_classic() + labs(title="Age Density by heart disease") + xlab("age(year)")+ theme(plot.title=element_text(size=10))
+p_sex <- heart |> ggplot(aes(x=HeartDisease, fill=Sex)) + geom_bar(alpha=.6) + labs(title="Bar of Heart Disease by Sex") + scale_fill_manual(values=c("firebrick2", "dodgerblue1")) + theme_classic()  + coord_flip()+ theme(plot.title=element_text(size=10))
+p_chest <- heart |> ggplot(aes(x=HeartDisease, fill=ChestPainType)) + geom_bar(alpha=.7) + labs(title="Bar of Heart Disease by Chest Pain") + scale_fill_manual(values=c( "#4E84C4", "#D55E00","#C3D7A4", "#FFDB6D")) + theme_classic()  + coord_flip()+ theme(plot.title=element_text(size=10))
 #p_exer <- heart |> ggplot(aes(x=HeartDisease, fill=ExerciseAngina)) + geom_bar(alpha=.6) + labs(title="bar plot #of heart disease by Exercise Angina groups") + scale_fill_manual(values=c("#56B4E9", "#F0E442")) + #theme_classic() + theme(aspect.ratio = 1/5) + coord_flip()
 ggarrange(p_cho, p_age, p_sex, p_chest, ncol = 2, nrow=2)
 ```
@@ -255,3 +255,4 @@ ggplot(data = plotTable, mapping = aes(x = Reference, y = Prediction, fill = goo
   xlim(rev(levels(table$Reference)))
 
 ```
+
